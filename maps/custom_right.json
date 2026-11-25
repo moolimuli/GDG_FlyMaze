@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "map_id": "custom_right",
+  "width": 8,
+  "height": 6,
+  "cell_size_mm": 10.0,
+  "start": [
+    1,
+    2
+  ],
+  "food": [
+    3,
+    0
+  ],
+  "cells": [
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ]
+  ],
+  "timeout_seconds": 14.0
+}

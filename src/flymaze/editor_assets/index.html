@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FlyMaze 地圖工作室</title><link rel="stylesheet" href="editor.css"></head>
+<body>
+<header><div class="brand"><span class="logo">F<span>↗</span></span><div><strong>FlyMaze<span class="brand-light"> 地圖工作室</span></strong><small>將想像中的路徑，變成下一場探索。</small></div></div><span class="badge">LOCAL WORKSPACE <i></i></span></header>
+<main>
+<aside>
+<div class="eyebrow">01 / 地圖設定</div><h1>設計一條新路徑</h1><p class="muted">畫出通道，放置起點與食物。牆壁、導航路線和氣味範圍將依地圖同步產生。</p>
+<label for="mapid">地圖名稱 <span>英文小寫、數字、底線</span></label><input id="mapid" value="custom_left" maxlength="55" spellcheck="false">
+<div class="pair"><div><label for="width">寬度 / 格</label><input id="width" type="number" min="3" max="12" value="8"></div><div><label for="height">高度 / 格</label><input id="height" type="number" min="3" max="12" value="6"></div></div>
+<button id="resize" class="subtle full">套用尺寸並清空</button>
+<label for="timeout">每回合時間 / 秒</label><input id="timeout" type="number" min="1" max="300" value="14">
+<div class="rule"></div><div class="eyebrow">02 / 繪圖工具</div>
+<div id="tools" class="tools"><button data-tool="draw" class="selected"><b>＋</b>通道 <kbd>1</kbd></button><button data-tool="erase"><b>−</b>擦除 <kbd>2</kbd></button><button data-tool="start"><b class="start-color">↗</b>起點 <kbd>3</kbd></button><button data-tool="food"><b class="food-color">●</b>食物 <kbd>4</kbd></button></div>
+<div class="pair history"><button id="undo" class="subtle">↶ 復原</button><button id="redo" class="subtle">重做 ↷</button></div>
+<div class="tip"><b>固定的模擬尺度</b><p>每格 10 × 10 mm，牆高 3 mm。保持通道一格寬；起點右方須保留通道，供果蠅朝 +X 出發。</p></div>
+</aside>
+<section class="workspace">
+<div class="workspace-top"><div><div class="eyebrow">CANVAS / 路徑畫布</div><h2 id="canvas-title">custom_left</h2></div><div class="segments"><button id="edit-view" class="active">2D 編輯</button><button id="iso-view">3D 預覽</button></div></div>
+<div class="canvas-wrap"><canvas id="canvas" aria-label="地圖畫布，點選或拖曳繪製通道"></canvas><span class="axis" id="axis">↑ +Y　　+X →</span></div>
+<div class="canvas-meta"><span id="hover">拖曳繪製通道 · 右鍵擦除</span><span>單位 mm <i>·</i> 10 mm / 格</span></div>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div class="stats"><div><small>可走通道</small><strong id="cell-count">—</strong></div><div><small>最短路線</small><strong id="route-length">—</strong></div><div><small>起點朝向</small><strong>+X <span>向右</span></strong></div></div>
+<div class="savebar"><div><b>準備好讓果蠅探索了嗎？</b><p>儲存前會檢查通道連通、起點方向與地圖尺度。</p></div><button id="save" class="primary">儲存至專案 <span>↗</span></button></div>
+</section>
+<aside class="right-panel"><div class="eyebrow">03 / 從範本開始</div><h3>先畫一條簡單的路</h3><p class="muted">範本為自訂格狀地圖，不是原本的訓練或保留測試地圖。</p><div class="templates"><button data-template="left"><span>└</span><div><b>左彎通道</b><small>一次轉彎 · 入門</small></div></button><button data-template="right"><span>┌</span><div><b>右彎通道</b><small>鏡像路徑 · 入門</small></div></button><button data-template="s"><span>Ƨ</span><div><b>S 型通道</b><small>連續轉彎 · 進階</small></div></button></div>
+<div class="rule"></div><label for="saved">已儲存的地圖</label><select id="saved"><option value="">選擇地圖…</option></select><button id="reload" class="subtle full">重新讀取清單</button>
+<div class="rule"></div><h3>帶走你的地圖</h3><p class="muted">JSON 可備份、分享，或匯入後繼續編輯。</p><button id="export" class="subtle full">匯出 JSON ↓</button><button id="import" class="subtle full">匯入 JSON ↑</button><input id="file" type="file" accept=".json,application/json" hidden>
+<div class="legend"><span><i class="walk"></i>通道</span><span><i class="spawn"></i>起點</span><span><i class="goal"></i>食物</span><span><i class="route"></i>最短路線</span></div>
+<p class="note">3D 預覽顯示地圖外觀。實際果蠅運動、接觸與氣味模擬，請在 Ubuntu 的 FlyMaze 中執行。</p>
+</aside>
+</main><footer>FLYMAZE / EXPLORE BY DESIGN <span>地圖編輯 · 版本 1</span></footer><script src="editor.js"></script>
+</body></html>

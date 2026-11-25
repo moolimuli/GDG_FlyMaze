@@ -10,6 +10,7 @@ import numpy as np
 from flygym.compose import FlatGroundWorld, NeuroMechFly
 
 from flymaze.corridor import CorridorSpec, corridor_world_configurator
+from flymaze.custom_maps import GridMapSpec
 from flymaze.food import food_world_configurator
 from flymaze.geometry import (
     RIGHT_CORNER_WALL_NAMES,
@@ -69,12 +70,17 @@ class MazeMapDefinition:
     world_configurators: tuple[WorldConfigurator, ...]
     wall_geom_names_by_side: dict[str, str]
     odor_bounds_mm: tuple[float, float, float, float]
+    custom_grid: GridMapSpec | None = None
 
     def configure_world(self, world: FlatGroundWorld, fly: NeuroMechFly) -> None:
         for configurator in self.world_configurators:
             configurator(world, fly)
 
     def build_odor_field(self) -> StaticOdorField:
+        if self.custom_grid is not None:
+            from flymaze.custom_map_runtime import build_custom_odor_field
+
+            return build_custom_odor_field(self.custom_grid)
         min_x, max_x, min_y, max_y = self.odor_bounds_mm
         cell_size = APPROVED_ODOR_CELL_SIZE_MM
         x_values = np.arange(min_x, max_x + cell_size * 0.5, cell_size)
@@ -225,3 +231,16 @@ MAPS = {
         VALIDATION_S_TURN_COMPLEX,
     )
 }
+
+
+# Custom maps are opt-in; the original registry is identical without environment flags.
+def _load_custom_maps() -> None:
+    import os
+
+    if os.environ.get("FLYMAZE_MAP_FILE") or os.environ.get("FLYMAZE_TRAIN_MAP"):
+        from flymaze.custom_map_runtime import register_environment_maps
+
+        register_environment_maps(MAPS)
+
+
+_load_custom_maps()
