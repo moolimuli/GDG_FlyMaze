@@ -19,3 +19,21 @@ def test_public_action_is_mapped_to_symmetric_ppo_space() -> None:
     np.testing.assert_allclose(
         public_to_symmetric_action(np.asarray([1.0, 1.0], dtype=np.float32)), [1.0, 1.0]
     )
+
+
+def test_default_rule_expert_is_the_released_original() -> None:
+    from flymaze.agents import StatelessRuleAgent
+    from flymaze.multitask import make_rule_expert
+    from flymaze.relative_odor_agent import RelativeOdorRuleAgent
+
+    assert type(make_rule_expert("original")) is StatelessRuleAgent
+    assert type(make_rule_expert("relative")) is RelativeOdorRuleAgent
+
+
+def test_unknown_rule_expert_is_rejected() -> None:
+    import pytest
+
+    from flymaze.multitask import make_rule_expert
+
+    with pytest.raises(ValueError, match="unknown rule expert"):
+        make_rule_expert("magic")

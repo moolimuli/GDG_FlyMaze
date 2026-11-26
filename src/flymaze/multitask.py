@@ -19,12 +19,29 @@ from flymaze.config import MultitaskTrainingConfig, PPOHyperparameters
 from flymaze.env import FlyMazeEnv
 from flymaze.evaluation import evaluate_agent
 from flymaze.ppo import SB3AgentAdapter, SymmetricPPOActionWrapper
+from flymaze.relative_odor_agent import RelativeOdorRuleAgent
 
 MULTITASK_TRAIN_MAP_IDS = (
     "train_l_left",
     "train_l_right",
     "validation_s_turn_complex",
 )
+
+
+RULE_EXPERTS: dict[str, Callable[[], StatelessRuleAgent | RelativeOdorRuleAgent]] = {
+    "original": StatelessRuleAgent,
+    "relative": RelativeOdorRuleAgent,
+}
+
+
+def make_rule_expert(name: str) -> StatelessRuleAgent | RelativeOdorRuleAgent:
+    """Build the demonstration expert; "original" keeps the released behavior."""
+
+    try:
+        return RULE_EXPERTS[name]()
+    except KeyError as exc:
+        choices = ", ".join(sorted(RULE_EXPERTS))
+        raise ValueError(f"unknown rule expert: {name}; choose from {choices}") from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,7 +59,10 @@ def public_to_symmetric_action(action: NDArray[np.float32]) -> NDArray[np.float3
 
 
 def collect_rule_demonstrations(
-    map_ids: tuple[str, ...], seeds: tuple[int, ...], samples_per_demonstration: int
+    map_ids: tuple[str, ...],
+    seeds: tuple[int, ...],
+    samples_per_demonstration: int,
+    expert: str = "original",
 ) -> tuple[NDArray[np.float32], NDArray[np.float32], list[DemonstrationSummary]]:
     observations: list[NDArray[np.float32]] = []
     actions: list[NDArray[np.float32]] = []
@@ -53,7 +73,7 @@ def collect_rule_demonstrations(
             for seed in seeds:
                 episode_observations: list[NDArray[np.float32]] = []
                 episode_actions: list[NDArray[np.float32]] = []
-                agent = StatelessRuleAgent()
+                agent = make_rule_expert(expert)
                 observation, _ = env.reset(seed=seed)
                 terminated = False
                 truncated = False
@@ -118,6 +138,7 @@ def train_multitask_ppo(
     output_directory: Path,
     hyperparameters: PPOHyperparameters,
     training: MultitaskTrainingConfig,
+    expert: str = "original",
 ) -> dict[str, object]:
     """Warm-start an SB3 PPO actor from demonstrations, then continue on-policy PPO updates."""
 
@@ -129,6 +150,7 @@ def train_multitask_ppo(
         MULTITASK_TRAIN_MAP_IDS,
         training.demonstration_seeds,
         training.samples_per_demonstration,
+        expert,
     )
     base_env = SymmetricPPOActionWrapper(FlyMazeEnv("train_l_left"))
     model = PPO(
@@ -199,6 +221,7 @@ def train_multitask_ppo(
     return {
         "hyperparameters": asdict(hyperparameters),
         "training": asdict(training),
+        "expert": expert,
         "demonstration_count": len(observations),
         "demonstrations": [asdict(summary) for summary in demo_summaries],
         "behavior_epochs": training.behavior_epochs,

@@ -114,6 +114,7 @@ def _train_multitask_ppo(args: argparse.Namespace) -> int:
         output_directory=output_directory,
         hyperparameters=hyperparameters,
         training=training,
+        expert=args.expert,
     )
     model_path = Path(str(report["model_path"]))
     report["model_sha256"] = _sha256(model_path)
@@ -189,6 +190,12 @@ def build_parser() -> argparse.ArgumentParser:
     multitask.add_argument("--n-envs", type=int)
     multitask.add_argument("--samples-per-demonstration", type=int)
     multitask.add_argument("--evaluation-seeds", type=int, nargs="+")
+    multitask.add_argument(
+        "--expert",
+        choices=["original", "relative"],
+        default="original",
+        help="rule expert for demonstrations; original keeps the released behavior",
+    )
     _add_shared_ppo_overrides(multitask)
     multitask.set_defaults(handler=_train_multitask_ppo)
 
